@@ -70,7 +70,7 @@ object Hooker {
                         }
                     }
                     val proxyIntent = Intent()
-                    proxyIntent.setClassName("com.kangf.dynamic", "com.kangf.dynamic.ProxyActivity")
+                    proxyIntent.setClassName("zlc.season.desolator", "zlc.season.desolator.StubActivity")
                     proxyIntent.putExtra("oldIntent", args[index] as Intent)
                     args[index] = proxyIntent
                 }

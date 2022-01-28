@@ -3,11 +3,18 @@ package zlc.season.desolator
 import android.content.Context
 import android.content.res.AssetManager
 import android.content.res.Resources
+import androidx.appcompat.app.AppCompatActivity
 import dalvik.system.DexClassLoader
+import java.io.File
 import java.lang.reflect.Array as JavaArray
 
 object LoadUtils {
-    const val PLUGIN_PATH = "sdcard/plugin-debug.apk"
+    var PLUGIN_PATH = ""
+
+    fun init(context: Context) {
+        val dir = context.getDir("plugins", AppCompatActivity.MODE_PRIVATE)
+        PLUGIN_PATH = File(dir, "pluginb-release-unsigned.apk").path
+    }
 
     fun load(context: Context) {
         try {
@@ -48,11 +55,21 @@ object LoadUtils {
 
     fun loadAsset(context: Context): Resources? {
         try {
+            //初始化一些成员变量和加载已安装的插件
+            //初始化一些成员变量和加载已安装的插件
+            val packageInfoField = context.javaClass.field("mPackageInfo")
+            val resourceField = context.javaClass.field("mResources")
+            val packageInfo = packageInfoField.of(context)
+
             val assetManager = AssetManager::class.java.newInstance()
             val addAssetPathMethod = assetManager::class.java.getDeclaredMethod("addAssetPath", String::class.java)
             addAssetPathMethod.isAccessible = true
             addAssetPathMethod.invoke(assetManager, PLUGIN_PATH)
-            return Resources(assetManager, context.resources.displayMetrics, context.resources.configuration)
+            val resource = Resources(assetManager, context.resources.displayMetrics, context.resources.configuration)
+
+            resourceField.set(packageInfo, resource)
+
+            return resource
         } catch (e: Exception) {
             e.printStackTrace()
         }

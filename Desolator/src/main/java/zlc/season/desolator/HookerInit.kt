@@ -18,11 +18,21 @@ class HookerInit : ContentProvider() {
     override fun attachInfo(context: Context, info: ProviderInfo?) {
         super.attachInfo(context, info)
         HookerInit.context = context
-        Hooker.enableSuperReflection()
-        Hooker.hookInstrumentation((context as Application).baseContext)
+
+//        Hooker.hookInstrumentation((context as Application).baseContext)
     }
 
     override fun onCreate(): Boolean {
+        Hooker.enableSuperReflection()
+        Hooker.hookAms()
+        Hooker.hookHandler()
+
+        context?.let {
+            LoadUtils.init(it)
+            LoadUtils.load(it)
+            LoadUtils.loadAsset(it)
+        }
+
         return true
     }
 

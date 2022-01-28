@@ -9,3 +9,6 @@ dependencyResolutionManagement {
 rootProject.name = "DesolatorDemo"
 include ':app'
 include ':Desolator'
+include ':PluginDemo'
+include ':PluginDemo:plugina'
+include ':PluginDemo:pluginb'

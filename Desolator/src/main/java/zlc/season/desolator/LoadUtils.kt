@@ -56,7 +56,6 @@ object LoadUtils {
     fun loadAsset(context: Context): Resources? {
         try {
             //初始化一些成员变量和加载已安装的插件
-            //初始化一些成员变量和加载已安装的插件
             val packageInfoField = context.javaClass.field("mPackageInfo")
             val resourceField = context.javaClass.field("mResources")
             val packageInfo = packageInfoField.of(context)

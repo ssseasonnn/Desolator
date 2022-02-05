@@ -4,6 +4,7 @@
 
     <application>
         <activity
+            android:theme="@style/Theme.AppCompat"
             android:name="zlc.season.desolator.StubActivity"
             android:exported="false" />
 

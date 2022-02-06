@@ -16,68 +16,6 @@ object PluginManager {
 
     val pluginMap = mutableMapOf<String, PluginInfo>()
 
-
-    @Volatile
-    var mNowClassLoader: SuperClassLoader? = null //系统原始的ClassLoader
-
-    @Volatile
-    var mBaseClassLoader: ClassLoader? = null //系统原始的ClassLoader
-
-
-    fun init() {
-        //初始化一些成员变量和加载已安装的插件
-        val contextImpl = (HookerInit.context as Application).baseContext
-        val javaClass = contextImpl.javaClass
-        val mPackageInfoField = javaClass.field("mPackageInfo")
-        mBaseClassLoader = HookerInit.context.classLoader
-        val classLoader =
-            SuperClassLoader(
-                HookerInit.context.getPackageCodePath(),
-                HookerInit.context.getClassLoader()
-            )
-
-        //system filed
-        val systemClassLoaderField = Class("dalvik.system.BaseDexClassLoader").field("pathList")
-        val dexElementsField = Class("dalvik.system.DexPathList").field("dexElements")
-
-        //get system elements
-        val hostClassLoader = HookerInit.context.getClassLoader()
-        val hostPathList = systemClassLoaderField.of(hostClassLoader)
-        val hostElements = dexElementsField.of(hostPathList) as Array<*>
-
-
-        val currentPathList = systemClassLoaderField.of(classLoader)
-//        systemClassLoaderField.set(classLoader, hostPathList)
-
-//        val dexOutputDir: File = HookerInit.context.getDir("dex", Context.MODE_PRIVATE)
-//        val dexOutputPath = dexOutputDir.absolutePath
-//        for (plugin in plugins) {
-//            val dexClassLoader = DexClassLoader(
-//                plugin.pluginPath,
-//                dexOutputPath, null, mBaseClassLoader
-//            )
-//            classLoader.addPluginClassLoader(dexClassLoader)
-//        }
-
-        try {
-//            val field = javaClass.field("mClassLoader")
-//            val fieldObj = field.of(contextImpl)
-//
-//            field.set(fieldObj, classLoader)
-            val packageInfo = mPackageInfoField.of(contextImpl)
-            val field = packageInfo!!.javaClass.field("mClassLoader")
-//            field.set(packageInfo, classLoader)
-//            mPackageInfoField.set(mPackageInfoField.get(contextImpl), classLoader)
-//        RefInvoke.setFieldObject(mPackageInfonfo, "mClassLoader", classLoader)
-//            Thread.currentThread().contextClassLoader = classLoader
-            mNowClassLoader = classLoader
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-    }
-
     fun installPlugin(pluginData: PluginData) {
         val pluginFileName = pluginData.fileName()
         val pluginFile = File(PLUGIN_DIR, pluginFileName)
@@ -89,7 +27,6 @@ object PluginManager {
         )
         val pluginInfo = PluginInfo(pluginFile.path, classLoader)
         pluginMap[pluginData.fileName()] = pluginInfo
-        mNowClassLoader?.addPluginClassLoader(classLoader)
         load(classLoader)
         loadAsset(HookerInit.context, pluginFile.path)
     }
@@ -105,13 +42,6 @@ object PluginManager {
             val hostPathList = systemClassLoaderField.of(hostClassLoader)
             val hostElements = dexElementsField.of(hostPathList) as Array<*>
 
-//            //get plugin elements
-//            val pluginClassLoader = DexClassLoader(
-//                LoadUtils.PLUGIN_PATH,
-//                context.cacheDir.absolutePath,
-//                null,
-//                context.classLoader
-//            )
             val pluginPathList = systemClassLoaderField.of(pluginClassLoader)
             val pluginElements = dexElementsField.of(pluginPathList) as Array<*>
 

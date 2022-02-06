@@ -13,34 +13,33 @@ class HookerInit : ContentProvider() {
     companion object {
         @SuppressLint("StaticFieldLeak")
         lateinit var context: Context
+
+        @SuppressLint("StaticFieldLeak")
+        lateinit var contextImpl: Context
     }
 
     override fun attachInfo(context: Context, info: ProviderInfo?) {
         super.attachInfo(context, info)
         Hooker.enableSuperReflection()
         HookerInit.context = context
-        PluginManager.init()
-
-//        Hooker.hookInstrumentation((context as Application).baseContext)
+        HookerInit.contextImpl = (context as Application).baseContext
     }
 
     override fun onCreate(): Boolean {
-
-//        Hooker.hookPms()
+        Hooker.hookPms()
         Hooker.hookAms()
         Hooker.hookHandler()
-
-
-//        context?.let {
-//            LoadUtils.init(it)
-//            LoadUtils.load(it)
-////            LoadUtils.loadAsset(it)
-//        }
 
         return true
     }
 
-    override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor? {
+    override fun query(
+        uri: Uri,
+        projection: Array<out String>?,
+        selection: String?,
+        selectionArgs: Array<out String>?,
+        sortOrder: String?
+    ): Cursor? {
         return null
     }
 

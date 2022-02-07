@@ -3,6 +3,7 @@ package zlc.season.desolator
 import android.content.Intent
 import zlc.season.desolator.DesolatorInit.Companion.classLoader
 import zlc.season.desolator.DesolatorInit.Companion.context
+import zlc.season.desolator.util.loge
 
 object Desolator {
     private val apkController by lazy { ApkController() }

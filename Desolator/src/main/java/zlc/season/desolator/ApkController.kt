@@ -4,6 +4,9 @@ import android.content.Context
 import dalvik.system.DexClassLoader
 import zlc.season.desolator.DesolatorInit.Companion.assetManager
 import zlc.season.desolator.DesolatorInit.Companion.context
+import zlc.season.desolator.util.checkDir
+import zlc.season.desolator.util.copy
+import zlc.season.desolator.util.logw
 import java.io.File
 
 class ApkController {

@@ -1,4 +1,4 @@
-package zlc.season.desolator
+package zlc.season.desolator.util
 
 import java.lang.reflect.Field
 import java.lang.reflect.Method

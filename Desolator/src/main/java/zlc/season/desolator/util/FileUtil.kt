@@ -1,4 +1,4 @@
-package zlc.season.desolator
+package zlc.season.desolator.util
 
 import java.io.File
 import java.io.FileOutputStream

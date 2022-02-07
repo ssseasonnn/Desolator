@@ -5,6 +5,10 @@ import android.content.res.Resources
 import zlc.season.desolator.DesolatorInit.Companion.classLoader
 import zlc.season.desolator.DesolatorInit.Companion.context
 import zlc.season.desolator.DesolatorInit.Companion.contextImpl
+import zlc.season.desolator.util.Class
+import zlc.season.desolator.util.field
+import zlc.season.desolator.util.method
+import zlc.season.desolator.util.of
 import java.lang.reflect.Array.newInstance
 import kotlin.Array as KotlinArray
 

@@ -5,7 +5,7 @@
     <application>
         <activity
             android:theme="@style/Theme.AppCompat"
-            android:name="zlc.season.desolator.StubActivity"
+            android:name="zlc.season.desolator.hook.StubActivity"
             android:exported="false" />
 
         <provider

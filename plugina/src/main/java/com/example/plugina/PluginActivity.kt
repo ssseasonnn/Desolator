@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
+import zlc.season.common.Common
 
 class PluginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,5 +18,7 @@ class PluginActivity : AppCompatActivity() {
             startActivity(Intent(this, Plugin1Activity::class.java))
         }
 
+        val common = Common()
+        common.test()
     }
 }

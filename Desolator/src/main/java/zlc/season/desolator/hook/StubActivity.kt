@@ -1,4 +1,4 @@
-package zlc.season.desolator
+package zlc.season.desolator.hook
 
 import androidx.appcompat.app.AppCompatActivity
 

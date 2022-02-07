@@ -1,10 +1,11 @@
-package zlc.season.desolator
+package zlc.season.desolator.hook
 
 import android.content.ComponentName
 import android.content.Intent
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.*
 import android.os.Handler
+import zlc.season.desolator.*
 import zlc.season.desolator.DesolatorInit.Companion.classLoader
 import zlc.season.desolator.DesolatorInit.Companion.context
 import java.lang.reflect.Method
@@ -57,7 +58,7 @@ class Hooker {
                     if (componentName.className == "zlc.season.pluginb.BPluginActivity") {
                         val newComponentName = ComponentName(
                             componentName.packageName,
-                            "zlc.season.desolator.StubActivity"
+                            "zlc.season.desolator.hook.StubActivity"
                         )
                         args[0] = newComponentName
                     }
@@ -105,7 +106,7 @@ class Hooker {
                         }
                     }
                     val proxyIntent = Intent()
-                    proxyIntent.setClassName(context.packageName, "zlc.season.desolator.StubActivity")
+                    proxyIntent.setClassName(context.packageName, "zlc.season.desolator.hook.StubActivity")
                     proxyIntent.putExtra("oldIntent", args[index] as Intent)
                     args[index] = proxyIntent
                 }

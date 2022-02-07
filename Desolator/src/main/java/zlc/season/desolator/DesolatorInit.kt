@@ -9,6 +9,7 @@ import android.content.pm.ProviderInfo
 import android.content.res.AssetManager
 import android.database.Cursor
 import android.net.Uri
+import zlc.season.desolator.hook.Hooker
 
 class DesolatorInit : ContentProvider() {
     companion object {

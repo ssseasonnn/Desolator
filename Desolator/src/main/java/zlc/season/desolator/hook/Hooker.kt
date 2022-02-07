@@ -72,7 +72,7 @@ class Hooker {
                 }
                 if (result == null) {
                     val oldComponentName = args[0] as ComponentName
-                    val newComponentName = ComponentName(oldComponentName.packageName, StubActivity::class.java.name)
+                    val newComponentName = ComponentName(oldComponentName.packageName, DesolatorActivity::class.java.name)
                     args[0] = newComponentName
                     "PMS getActivityInfo hooked! Old -> $oldComponentName, New -> $newComponentName".logd()
                     return@newProxyInstance method.invoke(packageManager, *args)
@@ -132,7 +132,7 @@ class Hooker {
                             }
                             if (activityInfo == null) {
                                 val proxyIntent = Intent()
-                                proxyIntent.setClass(context, StubActivity::class.java)
+                                proxyIntent.setClass(context, DesolatorActivity::class.java)
                                 proxyIntent.putExtra(KEY_REAL_INTENT, realIntent)
                                 args[index] = proxyIntent
 

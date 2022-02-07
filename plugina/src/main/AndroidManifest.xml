@@ -19,7 +19,8 @@
             android:exported="false" />
         <activity
             android:name=".PluginActivity"
-            android:exported="false" />
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>

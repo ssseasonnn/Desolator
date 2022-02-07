@@ -2,6 +2,7 @@ package zlc.season.desolator.hook
 
 import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.*
 import android.os.Handler
@@ -12,6 +13,10 @@ import java.lang.reflect.Method
 import java.lang.reflect.Proxy.newProxyInstance
 
 class Hooker {
+    companion object {
+        const val KEY_REAL_INTENT = "key_desolator_real_intent"
+    }
+
     fun init() {
         enableReflection()
         hookAms()
@@ -52,20 +57,31 @@ class Hooker {
             val classIPackageManager = Class("android.content.pm.IPackageManager")
 
             val proxyPackageManager = newProxyInstance(classLoader, arrayOf(classIPackageManager)) { _, method, args ->
-                "PMS hooked! Method -> ${method.name}".logd()
-                if (method.name == "getActivityInfo") {
-                    val componentName = args[0] as ComponentName
-                    if (componentName.className == "zlc.season.pluginb.BPluginActivity") {
-                        val newComponentName = ComponentName(
-                            componentName.packageName,
-                            "zlc.season.desolator.hook.StubActivity"
-                        )
-                        args[0] = newComponentName
-                    }
+//                "PMS hooked! Method -> ${method.name}, Args -> ${args?.toList()}".logd()
+                if (args == null) {
+                    return@newProxyInstance method.invoke(packageManager)
                 }
-                method.invoke(packageManager, *args)
+                if (method.name != "getActivityInfo") {
+                    return@newProxyInstance method.invoke(packageManager, *args)
+                }
+
+                val result = try {
+                    method.invoke(packageManager, *args)
+                } catch (e: Exception) {
+                    null
+                }
+                if (result == null) {
+                    val oldComponentName = args[0] as ComponentName
+                    val newComponentName = ComponentName(oldComponentName.packageName, StubActivity::class.java.name)
+                    args[0] = newComponentName
+                    "PMS getActivityInfo hooked! Old -> $oldComponentName, New -> $newComponentName".logd()
+                    return@newProxyInstance method.invoke(packageManager, *args)
+                } else {
+                    return@newProxyInstance result
+                }
             }
 
+            //replace
             fieldPackageManager.set(null, proxyPackageManager)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -92,26 +108,44 @@ class Hooker {
             }
 
             val proxyActivityManager = newProxyInstance(classLoader, arrayOf(proxyClass)) { _, method, args ->
-                "AMS hooked! Method -> ${method.name}, Args -> $args".logd()
+//                "AMS hooked! Method -> ${method.name}, Args -> ${args?.toList()}".logd()
                 if (args == null) {
                     return@newProxyInstance method.invoke(instance)
                 }
 
                 if (method.name == "startActivity") {
-                    var index = 0
+                    var index = -1
                     for (i in args.indices) {
                         if (args[i] is Intent) {
                             index = i
                             break
                         }
                     }
-                    val proxyIntent = Intent()
-                    proxyIntent.setClassName(context.packageName, "zlc.season.desolator.hook.StubActivity")
-                    proxyIntent.putExtra("oldIntent", args[index] as Intent)
-                    args[index] = proxyIntent
+                    if (index >= 0) {
+                        val realIntent = args[index] as Intent
+                        val realComponentName = realIntent.component
+                        if (realComponentName != null) {
+                            val activityInfo = try {
+                                context.packageManager.getActivityInfo(realComponentName, PackageManager.GET_META_DATA)
+                            } catch (e: Exception) {
+                                null
+                            }
+                            if (activityInfo == null) {
+                                val proxyIntent = Intent()
+                                proxyIntent.setClass(context, StubActivity::class.java)
+                                proxyIntent.putExtra(KEY_REAL_INTENT, realIntent)
+                                args[index] = proxyIntent
+
+                                "AMS startActivity hooked! Old -> $realComponentName, New -> ${proxyIntent.component}".logd()
+                            }
+                        }
+                    }
                 }
+
                 method.invoke(instance, *args)
             }
+
+            //replace activity manager
             fieldSingletonInstance.set(activityManager, proxyActivityManager)
         } catch (e: Exception) {
             e.logw()
@@ -124,26 +158,26 @@ class Hooker {
             val h = Class("android.app.ActivityThread").field("mH").of(activityThread)
 
             val fieldHandlerCallback = Class("android.os.Handler").field("mCallback")
-
             fieldHandlerCallback[h] = Handler.Callback { msg ->
                 try {
-                    "ActivityThread handler hooked! Msg -> ${msg.what}".logd()
+//                    "ActivityThread handler hooked! Msg -> $msg".logd()
                     when (msg.what) {
                         100 -> {
                             val proxyIntent = msg.obj.javaClass.field("intent").of(msg.obj) as Intent
-                            val intent = proxyIntent.getParcelableExtra<Intent>("oldIntent")
+                            val intent = proxyIntent.getParcelableExtra<Intent>(KEY_REAL_INTENT)
                             intent?.let {
+                                "ActivityThread hooked! Old -> ${proxyIntent.component}, New -> ${it.component}".logd()
                                 proxyIntent.component = it.component
                             }
                         }
                         159 -> {
-                            val mActivityCallbacks = msg.obj.javaClass.field("mActivityCallbacks").of(msg.obj) as List<*>
-                            mActivityCallbacks.forEach {
-                                val itemClass = it?.javaClass
-                                if (itemClass?.name == "android.app.servertransaction.LaunchActivityItem") {
-                                    val proxyIntent = itemClass.field("mIntent").of(it) as Intent
-                                    val intent = proxyIntent.getParcelableExtra<Intent>("oldIntent")
+                            val activityCallbacks = msg.obj.javaClass.field("mActivityCallbacks").of(msg.obj) as List<*>
+                            activityCallbacks.filterNotNull().forEach { each ->
+                                if (each.javaClass.name == "android.app.servertransaction.LaunchActivityItem") {
+                                    val proxyIntent = each.javaClass.field("mIntent").of(each) as Intent
+                                    val intent = proxyIntent.getParcelableExtra<Intent>(KEY_REAL_INTENT)
                                     intent?.let {
+                                        "ActivityThread hooked! Old -> ${proxyIntent.component}, New -> ${it.component}".logd()
                                         proxyIntent.component = it.component
                                     }
                                 }

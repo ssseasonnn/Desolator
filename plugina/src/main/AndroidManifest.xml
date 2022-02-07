@@ -14,13 +14,15 @@
     </dist:module>
 
     <application>
+<!--        <activity-->
+<!--            android:name=".Plugin2Activity"-->
+<!--            android:exported="false" />-->
         <activity
             android:name=".Plugin1Activity"
             android:exported="false" />
         <activity
             android:name=".PluginActivity"
-            android:exported="false">
-        </activity>
+            android:exported="false"></activity>
     </application>
 
 </manifest>

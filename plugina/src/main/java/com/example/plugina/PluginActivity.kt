@@ -15,7 +15,7 @@ class PluginActivity : AppCompatActivity() {
         val button = findViewById<Button>(R.id.button)
         button.setOnClickListener {
             Toast.makeText(this, "hello plugin", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(this, Plugin1Activity::class.java))
+            startActivity(Intent(this, Plugin2Activity::class.java))
         }
 
         val common = Common()

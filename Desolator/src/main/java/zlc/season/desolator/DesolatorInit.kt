@@ -9,27 +9,27 @@ import android.content.pm.ProviderInfo
 import android.database.Cursor
 import android.net.Uri
 
-class HookerInit : ContentProvider() {
+class DesolatorInit : ContentProvider() {
     companion object {
         @SuppressLint("StaticFieldLeak")
         lateinit var context: Context
 
         @SuppressLint("StaticFieldLeak")
         lateinit var contextImpl: Context
+
+        lateinit var classLoader: ClassLoader
     }
 
     override fun attachInfo(context: Context, info: ProviderInfo?) {
         super.attachInfo(context, info)
-        Hooker.enableSuperReflection()
-        HookerInit.context = context
-        HookerInit.contextImpl = (context as Application).baseContext
+        DesolatorInit.context = context
+        contextImpl = (context as Application).baseContext
+        classLoader = context.classLoader
+
+        Hooker().init()
     }
 
     override fun onCreate(): Boolean {
-        Hooker.hookPms()
-        Hooker.hookAms()
-        Hooker.hookHandler()
-
         return true
     }
 

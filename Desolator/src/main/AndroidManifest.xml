@@ -9,7 +9,7 @@
             android:exported="false" />
 
         <provider
-            android:name=".HookerInit"
-            android:authorities="zlc.season.desolator.HookerInit" />
+            android:name=".DesolatorInit"
+            android:authorities="zlc.season.desolator.DesolatorInit" />
     </application>
 </manifest>

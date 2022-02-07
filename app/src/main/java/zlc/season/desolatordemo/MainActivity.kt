@@ -1,16 +1,9 @@
 package zlc.season.desolatordemo
 
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import dalvik.system.DexClassLoader
 import zlc.season.desolator.*
-import java.io.File
 
 
 class MainActivity : AppCompatActivity() {
@@ -37,8 +30,8 @@ class MainActivity : AppCompatActivity() {
 //            startActivity(Intent(this, classToLoad))
 
             val pluginData = PluginData(1, "a", 1)
-            PluginManager.installPlugin(pluginData)
-            PluginManager.startPlugin(pluginData)
+            Desolator.installPlugin(pluginData)
+            Desolator.startPlugin(pluginData)
         }
     }
 

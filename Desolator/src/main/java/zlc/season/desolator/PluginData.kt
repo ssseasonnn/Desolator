@@ -7,6 +7,10 @@ data class PluginData(
 ) {
     fun fileName(): String {
 //        return "plugin_${name}_${id}_${version}.apk"
-        return "plugina-debug.apk"
+        return "${name}_${version}.apk"
+    }
+
+    override fun toString(): String {
+        return "Plugin: [ id = $id, name = $name, version = $version ]"
     }
 }

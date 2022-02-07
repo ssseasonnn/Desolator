@@ -1,6 +1,6 @@
 package zlc.season.desolator
 
-data class PluginInfo(
+data class DesolatorPlugin(
     val pluginId: Int,
     val apkPath: String,
     val classLoader: ClassLoader,

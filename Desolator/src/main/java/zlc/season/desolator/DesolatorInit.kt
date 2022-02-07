@@ -6,6 +6,7 @@ import android.content.ContentProvider
 import android.content.ContentValues
 import android.content.Context
 import android.content.pm.ProviderInfo
+import android.content.res.AssetManager
 import android.database.Cursor
 import android.net.Uri
 
@@ -18,6 +19,8 @@ class DesolatorInit : ContentProvider() {
         lateinit var contextImpl: Context
 
         lateinit var classLoader: ClassLoader
+
+        lateinit var assetManager: AssetManager
     }
 
     override fun attachInfo(context: Context, info: ProviderInfo?) {
@@ -25,8 +28,10 @@ class DesolatorInit : ContentProvider() {
         DesolatorInit.context = context
         contextImpl = (context as Application).baseContext
         classLoader = context.classLoader
+        assetManager = context.assets
 
         Hooker().init()
+        Desolator.installInternalPlugin()
     }
 
     override fun onCreate(): Boolean {

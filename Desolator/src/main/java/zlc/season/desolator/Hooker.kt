@@ -91,7 +91,11 @@ class Hooker {
             }
 
             val proxyActivityManager = newProxyInstance(classLoader, arrayOf(proxyClass)) { _, method, args ->
-                "AMS hooked! Method -> ${method.name}".logd()
+                "AMS hooked! Method -> ${method.name}, Args -> $args".logd()
+                if (args == null) {
+                    return@newProxyInstance method.invoke(instance)
+                }
+
                 if (method.name == "startActivity") {
                     var index = 0
                     for (i in args.indices) {

@@ -22,9 +22,12 @@ dependencyResolutionManagement {
 
 rootProject.name = "DesolatorDemo"
 include ':app'
+include ':base'
+
 include ':desolator'
+include ':plugin'
 
 include ':modules'
 include ':modules:foo'
 include ':modules:bar'
-include ':plugin'
+

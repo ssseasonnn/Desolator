@@ -35,7 +35,7 @@ android {
 
 dependencies {
     implementation project(':desolator')
-//    api project(':base')
+    implementation project(':base')
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

@@ -1,42 +1,53 @@
 plugins {
-    id 'com.android.library'
-    id 'kotlin-android'
-}
-
-android {
-    compileSdk compile_sdk
-
-    defaultConfig {
-        minSdk 21
-        targetSdk target_sdk
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles "consumer-rules.pro"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+    id 'kotlin'
+    id 'groovy'
+    id 'java-gradle-plugin'
+    id 'maven-publish'
+    id 'com.gradle.plugin-publish' version '0.18.0'
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation "com.android.tools.build:gradle:7.0.4"
+    implementation 'com.android.tools.build:gradle-api:7.0.4'
+}
 
+group = 'io.github.ssseasonnn'
+version = '1.0.0'
 
+gradlePlugin {
+    plugins {
+        butterflyPlugin {
+            id = 'io.github.ssseasonnn.desolator'
+            displayName = 'Desolator plugin'
+            description = 'Desolator plugin'
+            implementationClass = 'zlc.season.desolator.plugin.DesolatorPlugin'
+        }
+    }
+}
+
+pluginBundle {
+    website = 'https://github.com/ssseasonnn/Desolator'
+    vcsUrl = 'https://github.com/ssseasonnn/Desolator.git'
+    tags = ['Desolator', 'Plugin']
+}
+
+tasks.withType(Copy).all {
+    duplicatesStrategy 'exclude'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'io.github.ssseasonnn'
+            artifactId = 'io.github.ssseasonnn.desolator'
+            version = '1.0.0'
+
+            from components.java
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
 }

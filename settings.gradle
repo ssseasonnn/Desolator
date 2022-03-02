@@ -1,14 +1,30 @@
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+pluginManagement {
     repositories {
         google()
         mavenCentral()
-        jcenter() // Warning: this repository is going to shut down soon
+        gradlePluginPortal()
+        jcenter()
+        maven { url 'https://jitpack.io' }
+        mavenLocal()
     }
 }
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        jcenter()
+        maven { url 'https://jitpack.io' }
+        mavenLocal()
+    }
+}
+
 rootProject.name = "DesolatorDemo"
 include ':app'
-include ':Desolator'
-include ':Plugin'
-include ':plugina'
-include ':common'
+include ':desolator'
+
+include ':modules'
+include ':modules:foo'
+include ':modules:bar'
+include ':plugin'

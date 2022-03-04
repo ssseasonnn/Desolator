@@ -23,6 +23,7 @@ import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import java.io.File
 import java.io.Serializable
+import java.util.*
 import javax.inject.Inject
 
 class DesolatorPlugin : Plugin<Project> {
@@ -49,7 +50,10 @@ class DesolatorPlugin : Plugin<Project> {
                 val version = extension.getPluginVersion().getOrElse(1)
                 val pluginData = PluginData(name, id, version)
 
-                val copyApksProvider = project.tasks.register("copy${variant.name}ApkToApp", CopyApksTask::class.java)
+                val copyApksProvider = project.tasks.register(
+                    "copy${variant.name.cap()}ApkToApp",
+                    CopyApksTask::class.java
+                )
 
                 val transformationRequest = variant.artifacts.use(copyApksProvider)
                     .wiredWithDirectories(
@@ -65,6 +69,10 @@ class DesolatorPlugin : Plugin<Project> {
                 }
             }
         }
+    }
+
+    private fun String.cap(): String {
+        return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
     }
 
     private fun getAppAssetDir(appDir: File): File {
@@ -92,6 +100,11 @@ interface WorkItemParameters : WorkParameters, Serializable {
 
 abstract class WorkItem @Inject constructor(private val workItemParameters: WorkItemParameters) : WorkAction<WorkItemParameters> {
     override fun execute() {
+        val file = workItemParameters.inputApkFile.asFile.get()
+        println("input file $file")
+        val ofile = workItemParameters.outputApkFile.get().asFile
+        println("output file $ofile")
+
         workItemParameters.outputApkFile.get().asFile.delete()
         workItemParameters.inputApkFile.asFile.get().copyTo(
             workItemParameters.outputApkFile.get().asFile

@@ -12,32 +12,29 @@ import zlc.season.desolator.util.of
 import java.lang.reflect.Array.newInstance
 import kotlin.Array as KotlinArray
 
-class PluginController {
-    private val resourceController by lazy { ResourceController() }
-    private val dexController by lazy { DexController() }
-    private val apkController by lazy { ApkController() }
+class PluginLoader {
+    private val resourceLoader by lazy { ResourceLoader() }
+    private val dexLoader by lazy { DexLoader() }
 
     private val pluginMap = mutableMapOf<Int, DesolatorPlugin>()
 
-    init {
 
-    }
+    fun loadPlugin(plugin: DesolatorPlugin) {
+        dexLoader.addPlugin(plugin)
+        resourceLoader.addPlugin(plugin)
 
-    fun addPlugin(desolatorPlugin: DesolatorPlugin) {
-        dexController.addPlugin(desolatorPlugin)
-        resourceController.addPlugin(desolatorPlugin)
-
-        pluginMap[desolatorPlugin.pluginId] = desolatorPlugin
+        pluginMap[plugin.pluginId] = plugin
     }
 
     fun isPluginLoaded(pluginId: Int): Boolean {
         return pluginMap[pluginId] != null
     }
 
-    class ResourceController {
+    class ResourceLoader {
         private val resourceField = contextImpl.javaClass.field("mResources")
         private val assetManager = AssetManager::class.java.newInstance()
-        private val addAssetPathMethod = assetManager::class.java.method("addAssetPath", String::class)
+        private val addAssetPathMethod =
+            assetManager::class.java.method("addAssetPath", String::class)
 
         init {
             addAssetPathMethod.invoke(assetManager, context.packageResourcePath)
@@ -46,7 +43,11 @@ class PluginController {
         fun addPlugin(desolatorPlugin: DesolatorPlugin) {
             try {
                 addAssetPathMethod.invoke(assetManager, desolatorPlugin.apkPath)
-                val resource = Resources(assetManager, context.resources.displayMetrics, context.resources.configuration)
+                val resource = Resources(
+                    assetManager,
+                    context.resources.displayMetrics,
+                    context.resources.configuration
+                )
                 resourceField.set(contextImpl, resource)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -54,7 +55,7 @@ class PluginController {
         }
     }
 
-    class DexController {
+    class DexLoader {
         //system filed
         private val fieldPathList = Class("dalvik.system.BaseDexClassLoader").field("pathList")
         private val fieldDexElements = Class("dalvik.system.DexPathList").field("dexElements")
@@ -66,9 +67,9 @@ class PluginController {
         //current dex elements
         private var currentDexElements = dexElements
 
-        fun addPlugin(desolatorPlugin: DesolatorPlugin) {
+        fun addPlugin(plugin: DesolatorPlugin) {
             try {
-                val pluginPathList = fieldPathList.of(desolatorPlugin.classLoader)
+                val pluginPathList = fieldPathList.of(plugin.classLoader)
                 val pluginDexElements = fieldDexElements.of(pluginPathList) as KotlinArray<*>
 
                 val mergedDexElements = newDexElementsArray(pluginDexElements)
@@ -84,9 +85,18 @@ class PluginController {
         }
 
         private fun newDexElementsArray(pluginDexElements: KotlinArray<*>): KotlinArray<*> {
-            val result = newInstance(dexElements.javaClass.componentType!!, currentDexElements.size + pluginDexElements.size) as KotlinArray<*>
+            val result = newInstance(
+                dexElements.javaClass.componentType!!,
+                currentDexElements.size + pluginDexElements.size
+            ) as KotlinArray<*>
             System.arraycopy(currentDexElements, 0, result, 0, currentDexElements.size)
-            System.arraycopy(pluginDexElements, 0, result, currentDexElements.size, pluginDexElements.size)
+            System.arraycopy(
+                pluginDexElements,
+                0,
+                result,
+                currentDexElements.size,
+                pluginDexElements.size
+            )
             return result
         }
     }

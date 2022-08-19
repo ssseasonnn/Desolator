@@ -1,6 +1,6 @@
 apply from: "../modules.gradle"
 
-desolator {
-    pluginId = 2
-    pluginVersion = 2
-}
+//desolator {
+//    pluginId = 2
+//    pluginVersion = 2
+//}

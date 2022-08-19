@@ -5,6 +5,7 @@ import java.io.FileOutputStream
 import java.io.InputStream
 
 internal fun InputStream.copy(dest: File) {
+    dest.parentFile?.checkDir()
     this.use {
         val outputStream = FileOutputStream(dest)
         outputStream.use {

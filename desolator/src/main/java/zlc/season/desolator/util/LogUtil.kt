@@ -6,35 +6,35 @@ import android.util.Log.*
 private var DEBUG = true
 private var LOG_TAG = "Desolator"
 
-fun setLogTag(tag: String) {
+fun setDesolatorLogTag(tag: String) {
     LOG_TAG = tag
 }
 
-fun setDebug(flag: Boolean) {
+fun setDesolatorDebug(flag: Boolean) {
     DEBUG = flag
 }
 
-fun <T> T.logd(tag: String = ""): T {
+internal fun <T> T.logd(tag: String = ""): T {
     realLog(::d, ::d, tag)
     return this
 }
 
-fun <T> T.logi(tag: String = ""): T {
+internal fun <T> T.logi(tag: String = ""): T {
     realLog(::i, ::i, tag)
     return this
 }
 
-fun <T> T.logw(tag: String = ""): T {
+internal fun <T> T.logw(tag: String = ""): T {
     realLog(::w, ::w, tag)
     return this
 }
 
-fun <T> T.loge(tag: String = ""): T {
+internal fun <T> T.loge(tag: String = ""): T {
     realLog(::e, ::e, tag)
     return this
 }
 
-fun <T> T.logv(tag: String = ""): T {
+internal fun <T> T.logv(tag: String = ""): T {
     realLog(::v, ::v, tag)
     return this
 }

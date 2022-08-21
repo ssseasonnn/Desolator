@@ -7,8 +7,6 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.*
 import android.os.Handler
 import zlc.season.desolator.*
-import zlc.season.desolator.DesolatorInit.Companion.classLoader
-import zlc.season.desolator.DesolatorInit.Companion.context
 import zlc.season.desolator.util.*
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy.newProxyInstance
@@ -34,7 +32,8 @@ class Hooker {
                     String::class.java, arrayOf<Class<*>>()::class.java
                 )
                 val vmRuntimeClass = forName.invoke(null, "dalvik.system.VMRuntime") as Class<*>
-                val getRuntimeMethod = getDeclaredMethod.invoke(vmRuntimeClass, "getRuntime", null) as Method
+                val getRuntimeMethod =
+                    getDeclaredMethod.invoke(vmRuntimeClass, "getRuntime", null) as Method
                 val setHiddenApiMethod = getDeclaredMethod.invoke(
                     vmRuntimeClass, "setHiddenApiExemptions",
                     arrayOf<Class<*>>(Array<String>::class.java)
@@ -57,7 +56,10 @@ class Hooker {
 
             val classIPackageManager = Class("android.content.pm.IPackageManager")
 
-            val proxyPackageManager = newProxyInstance(classLoader, arrayOf(classIPackageManager)) { _, method, args ->
+            val proxyPackageManager = newProxyInstance(
+                DesolatorInit.classLoader,
+                arrayOf(classIPackageManager)
+            ) { _, method, args ->
 //                "PMS hooked! Method -> ${method.name}, Args -> ${args?.toList()}".logd()
                 if (args == null) {
                     return@newProxyInstance method.invoke(packageManager)
@@ -73,7 +75,10 @@ class Hooker {
                 }
                 if (result == null) {
                     val oldComponentName = args[0] as ComponentName
-                    val newComponentName = ComponentName(oldComponentName.packageName, DesolatorActivity::class.java.name)
+                    val newComponentName = ComponentName(
+                        oldComponentName.packageName,
+                        DesolatorActivity::class.java.name
+                    )
                     args[0] = newComponentName
                     "PMS getActivityInfo hooked! Old -> $oldComponentName, New -> $newComponentName".logd()
                     return@newProxyInstance method.invoke(packageManager, *args)
@@ -92,8 +97,10 @@ class Hooker {
     private fun hookAms() {
         try {
             val activityManager = when {
-                SDK_INT >= Q -> Class("android.app.ActivityTaskManager").field("IActivityTaskManagerSingleton").of(null)
-                SDK_INT >= O -> Class("android.app.ActivityManager").field("IActivityManagerSingleton").of(null)
+                SDK_INT >= Q -> Class("android.app.ActivityTaskManager").field("IActivityTaskManagerSingleton")
+                    .of(null)
+                SDK_INT >= O -> Class("android.app.ActivityManager").field("IActivityManagerSingleton")
+                    .of(null)
                 else -> Class("android.app.ActivityManagerNative").field("gDefault").of(null)
             }
 
@@ -108,7 +115,10 @@ class Hooker {
                 Class("android.app.IActivityManager")
             }
 
-            val proxyActivityManager = newProxyInstance(classLoader, arrayOf(proxyClass)) { _, method, args ->
+            val proxyActivityManager = newProxyInstance(
+                DesolatorInit.classLoader,
+                arrayOf(proxyClass)
+            ) { _, method, args ->
 //                "AMS hooked! Method -> ${method.name}, Args -> ${args?.toList()}".logd()
                 if (args == null) {
                     return@newProxyInstance method.invoke(instance)
@@ -127,13 +137,19 @@ class Hooker {
                         val realComponentName = realIntent.component
                         if (realComponentName != null) {
                             val activityInfo = try {
-                                context.packageManager.getActivityInfo(realComponentName, PackageManager.GET_META_DATA)
+                                DesolatorInit.context.packageManager.getActivityInfo(
+                                    realComponentName,
+                                    PackageManager.GET_META_DATA
+                                )
                             } catch (e: Exception) {
                                 null
                             }
                             if (activityInfo == null) {
                                 val proxyIntent = Intent()
-                                proxyIntent.setClass(context, DesolatorActivity::class.java)
+                                proxyIntent.setClass(
+                                    DesolatorInit.context,
+                                    DesolatorActivity::class.java
+                                )
                                 proxyIntent.putExtra(KEY_REAL_INTENT, realIntent)
                                 args[index] = proxyIntent
 
@@ -155,7 +171,8 @@ class Hooker {
 
     private fun hookHandler() {
         try {
-            val activityThread = Class("android.app.ActivityThread").field("sCurrentActivityThread").of(null)
+            val activityThread =
+                Class("android.app.ActivityThread").field("sCurrentActivityThread").of(null)
             val h = Class("android.app.ActivityThread").field("mH").of(activityThread)
 
             val fieldHandlerCallback = Class("android.os.Handler").field("mCallback")
@@ -164,7 +181,8 @@ class Hooker {
 //                    "ActivityThread handler hooked! Msg -> $msg".logd()
                     when (msg.what) {
                         100 -> {
-                            val proxyIntent = msg.obj.javaClass.field("intent").of(msg.obj) as Intent
+                            val proxyIntent =
+                                msg.obj.javaClass.field("intent").of(msg.obj) as Intent
                             val intent = proxyIntent.getParcelableExtra<Intent>(KEY_REAL_INTENT)
                             intent?.let {
                                 "ActivityThread hooked! Old -> ${proxyIntent.component}, New -> ${it.component}".logd()
@@ -172,11 +190,14 @@ class Hooker {
                             }
                         }
                         159 -> {
-                            val activityCallbacks = msg.obj.javaClass.field("mActivityCallbacks").of(msg.obj) as List<*>
+                            val activityCallbacks =
+                                msg.obj.javaClass.field("mActivityCallbacks").of(msg.obj) as List<*>
                             activityCallbacks.filterNotNull().forEach { each ->
                                 if (each.javaClass.name == "android.app.servertransaction.LaunchActivityItem") {
-                                    val proxyIntent = each.javaClass.field("mIntent").of(each) as Intent
-                                    val intent = proxyIntent.getParcelableExtra<Intent>(KEY_REAL_INTENT)
+                                    val proxyIntent =
+                                        each.javaClass.field("mIntent").of(each) as Intent
+                                    val intent =
+                                        proxyIntent.getParcelableExtra<Intent>(KEY_REAL_INTENT)
                                     intent?.let {
                                         "ActivityThread hooked! Old -> ${proxyIntent.component}, New -> ${it.component}".logd()
                                         proxyIntent.component = it.component

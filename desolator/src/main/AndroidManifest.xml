@@ -7,8 +7,5 @@
             android:name="zlc.season.desolator.hook.DesolatorActivity"
             android:exported="false" />
 
-        <provider
-            android:name=".DesolatorInit"
-            android:authorities="zlc.season.desolator.DesolatorInit" />
     </application>
 </manifest>

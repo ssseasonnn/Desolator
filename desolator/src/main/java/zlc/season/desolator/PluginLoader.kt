@@ -2,9 +2,6 @@ package zlc.season.desolator
 
 import android.content.res.AssetManager
 import android.content.res.Resources
-import zlc.season.desolator.DesolatorInit.Companion.classLoader
-import zlc.season.desolator.DesolatorInit.Companion.context
-import zlc.season.desolator.DesolatorInit.Companion.contextImpl
 import zlc.season.desolator.util.Class
 import zlc.season.desolator.util.field
 import zlc.season.desolator.util.method
@@ -31,13 +28,13 @@ class PluginLoader {
     }
 
     class ResourceLoader {
-        private val resourceField = contextImpl.javaClass.field("mResources")
+        private val resourceField = DesolatorInit.contextImpl.javaClass.field("mResources")
         private val assetManager = AssetManager::class.java.newInstance()
         private val addAssetPathMethod =
             assetManager::class.java.method("addAssetPath", String::class)
 
         init {
-            addAssetPathMethod.invoke(assetManager, context.packageResourcePath)
+            addAssetPathMethod.invoke(assetManager, DesolatorInit.context.packageResourcePath)
         }
 
         fun addPlugin(desolatorPlugin: DesolatorPlugin) {
@@ -45,10 +42,10 @@ class PluginLoader {
                 addAssetPathMethod.invoke(assetManager, desolatorPlugin.apkPath)
                 val resource = Resources(
                     assetManager,
-                    context.resources.displayMetrics,
-                    context.resources.configuration
+                    DesolatorInit.context.resources.displayMetrics,
+                    DesolatorInit.context.resources.configuration
                 )
-                resourceField.set(contextImpl, resource)
+                resourceField.set(DesolatorInit.contextImpl, resource)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -61,7 +58,7 @@ class PluginLoader {
         private val fieldDexElements = Class("dalvik.system.DexPathList").field("dexElements")
 
         //origin info
-        private val pathList = fieldPathList.of(classLoader)
+        private val pathList = fieldPathList.of(DesolatorInit.classLoader)
         private val dexElements = fieldDexElements.of(pathList) as KotlinArray<*>
 
         //current dex elements

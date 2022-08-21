@@ -13,10 +13,8 @@
         <dist:fusing dist:include="true" />
     </dist:module>
 
-    <application>
-        <activity
-            android:name=".FooActivity"
-            android:exported="false" />
+    <application android:icon="@mipmap/ic_launcher">
+
     </application>
 
 </manifest>

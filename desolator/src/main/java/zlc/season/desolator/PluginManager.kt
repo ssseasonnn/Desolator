@@ -1,11 +1,14 @@
 package zlc.season.desolator
 
+import com.google.gson.Gson
 import dalvik.system.DexClassLoader
-import zlc.season.desolator.DesolatorInit.Companion.assetManager
 import zlc.season.desolator.util.*
 import zlc.season.desolator.util.Constant.ASSET_DIR
+import zlc.season.desolator.util.Constant.PLUGIN_INFO_FILE_NAME
 
 class PluginManager {
+    val gson = Gson()
+
     fun initInternalPlugin(): List<DesolatorPlugin> {
         return try {
             val pluginDataList = createPluginDataList()
@@ -16,15 +19,15 @@ class PluginManager {
         }
     }
 
-    private fun createPluginDataList(): MutableList<PluginData> {
-        val pluginDataList = mutableListOf<PluginData>()
+    private fun createPluginDataList(): List<PluginData> {
+        val paths = listAsset(ASSET_DIR) ?: return emptyList()
 
-        val assetFileNames = assetManager.list(ASSET_DIR)
-        assetFileNames?.forEach {
-            if (it.isPluginAsset()) {
-                val pluginData = it.parsePluginData()
+        val pluginDataList = mutableListOf<PluginData>()
+        paths.forEach { path ->
+            if (path.isPluginDir()) {
+                val pluginData = parsePluginData(path)
                 pluginData?.let {
-                    copyPluginFromAssetToStorage(pluginData)
+                    copyPluginFromAssetToStorage(path, pluginData)
                     pluginDataList.add(pluginData)
                 }
             }
@@ -32,7 +35,35 @@ class PluginManager {
         return pluginDataList
     }
 
-    private fun createPluginList(pluginDataList: MutableList<PluginData>): List<DesolatorPlugin> {
+    private fun String.isPluginDir(): Boolean {
+        val paths = listAsset("$ASSET_DIR/$this") ?: return false
+
+        var containPluginInfoFile = false
+        for (name in paths) {
+            if (name == Constant.PLUGIN_INFO_FILE_NAME) {
+                containPluginInfoFile = true
+                break
+            }
+        }
+        return containPluginInfoFile
+    }
+
+    private fun listAsset(path: String): Array<String>? {
+        return DesolatorInit.assetManager.list(path)
+    }
+
+    private fun parsePluginData(path: String): PluginData? {
+        val inputStream = DesolatorInit.assetManager.open("$ASSET_DIR/$path/$PLUGIN_INFO_FILE_NAME")
+        val json = String(inputStream.readBytes())
+        val pluginData = try {
+            gson.fromJson(json, PluginData::class.java)
+        } catch (e: Exception) {
+            null
+        }
+        return pluginData
+    }
+
+    private fun createPluginList(pluginDataList: List<PluginData>): List<DesolatorPlugin> {
         val result = mutableListOf<DesolatorPlugin>()
         pluginDataList.forEach {
             val plugin = createPlugin(it)
@@ -43,8 +74,10 @@ class PluginManager {
         return result
     }
 
-    private fun copyPluginFromAssetToStorage(pluginData: PluginData) {
-        val assetFileInputStream = assetManager.open(pluginData.assetPath())
+    private fun copyPluginFromAssetToStorage(path: String, pluginData: PluginData) {
+        val assetFileInputStream =
+            DesolatorInit.assetManager.open("$ASSET_DIR/$path/${pluginData.name}.apk")
+
         val storageFile = pluginData.storageFile()
         assetFileInputStream.copy(storageFile)
     }

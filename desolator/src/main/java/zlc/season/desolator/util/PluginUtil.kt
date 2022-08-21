@@ -35,32 +35,9 @@ fun PluginData.storageFileName(): String {
 
 fun PluginData.storageDir(): File {
     val pluginDir = DesolatorInit.context.getDir(STORAGE_DIR, MODE_PRIVATE)
-    return File(pluginDir, id.toString())
+    return File(pluginDir, name)
 }
 
 fun PluginData.storageFile(): File {
     return File(storageDir(), storageFileName())
-}
-
-fun String.parsePluginData(): PluginData? {
-    val lastDotIndex = lastIndexOf('.')
-    val str = substring(0, lastDotIndex)
-
-    if (!str.contains('_')) return null
-
-    val strList = str.split('_')
-    if (strList.size != 4) return null
-
-    val pluginName = strList[1]
-    val pluginId = try {
-        strList[2].toInt()
-    } catch (e: Exception) {
-        0
-    }
-    val pluginVersion = try {
-        strList[3].toInt()
-    } catch (e: Exception) {
-        0
-    }
-    return PluginData(pluginId, pluginName, pluginVersion)
 }

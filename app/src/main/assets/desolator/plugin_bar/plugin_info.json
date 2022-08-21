@@ -1,0 +1,6 @@
+{
+  "id": "002",
+  "name": "bar-debug",
+  "version": "3",
+  "entrance": "zlc.season.bar.BarFragment"
+}

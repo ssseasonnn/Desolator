@@ -1,0 +1,6 @@
+{
+  "id": "001",
+  "name": "foo-debug",
+  "version": "3",
+  "entrance": "zlc.season.foo.FooFragment"
+}

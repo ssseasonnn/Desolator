@@ -1,24 +1,65 @@
 package zlc.season.desolator
 
 import androidx.fragment.app.Fragment
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import zlc.season.desolator.DesolatorInit.classLoader
 import zlc.season.desolator.util.logw
+import zlc.season.downloadx.Progress
+import zlc.season.downloadx.State
 
 object Desolator {
     private val pluginManager by lazy { PluginManager() }
     private val pluginLoader by lazy { PluginLoader() }
 
-    fun installInternalPlugin() {
-        val pluginList = pluginManager.initInternalPlugin()
-        pluginList.forEach {
-            pluginLoader.loadPlugin(it)
+    private val pluginDownloader by lazy { DefaultPluginDownloader() }
+    private val coroutineScope by lazy { GlobalScope }
+
+    fun installInternalPlugin(): Job {
+        return coroutineScope.launch(Dispatchers.IO) {
+            val pluginList = pluginManager.initInternalPlugin()
+            pluginList.forEach {
+                pluginLoader.loadPlugin(it)
+            }
         }
     }
 
-    fun installPlugin(pluginData: PluginData) {
-        val pluginInfo = pluginManager.createPlugin(pluginData)
-        pluginInfo?.let {
-            pluginLoader.loadPlugin(it)
+    fun installPlugin(
+        pluginData: PluginData,
+        onProgress: (Progress) -> Unit,
+        onSuccess: () -> Unit,
+        onFailed: () -> Unit
+    ): Job {
+        val flow = pluginDownloader.startDownload(pluginData)
+        val job = flow.onEach {
+            when (it) {
+                is State.Downloading -> {
+                    onProgress(it.progress)
+                }
+                is State.Failed, is State.Stopped -> {
+                    onFailed()
+                }
+                is State.Succeed -> {
+                    realInstallPlugin(pluginData)
+                    onSuccess()
+                }
+                else -> {}
+            }
+        }.launchIn(coroutineScope)
+
+        job.invokeOnCompletion {
+            pluginDownloader.cancelDownload(pluginData)
+        }
+        return job
+    }
+
+    private suspend fun realInstallPlugin(pluginData: PluginData) {
+        withContext(Dispatchers.IO) {
+            val pluginInfo = pluginManager.createPlugin(pluginData)
+            pluginInfo?.let {
+                pluginLoader.loadPlugin(it)
+            }
         }
     }
 

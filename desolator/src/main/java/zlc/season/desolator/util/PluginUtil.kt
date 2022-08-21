@@ -26,6 +26,10 @@ fun PluginData.pluginDir(): File {
     return dir
 }
 
+fun PluginData.pluginFileName(): String {
+    return "$name${PLUGIN_NAME_SUFFIX}"
+}
+
 fun PluginData.pluginFile(): File {
-    return File(pluginDir(), "$name${PLUGIN_NAME_SUFFIX}")
+    return File(pluginDir(), pluginFileName())
 }

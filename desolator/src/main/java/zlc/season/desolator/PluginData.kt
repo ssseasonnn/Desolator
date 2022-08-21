@@ -4,7 +4,8 @@ data class PluginData(
     val id: Int,
     val name: String,
     val version: Int,
-    val entrance: String
+    val entrance: String = "",
+    val downloadUrl: String = ""
 ) {
     override fun toString(): String {
         return "Plugin: [id = $id, name = $name, version = $version]"

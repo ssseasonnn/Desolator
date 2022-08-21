@@ -4,8 +4,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 
-internal fun InputStream.copy(dest: File) {
-    dest.parentFile?.checkDir()
+internal infix fun InputStream.copyTo(dest: File) {
     this.use {
         val outputStream = FileOutputStream(dest)
         outputStream.use {

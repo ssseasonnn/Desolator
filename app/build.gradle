@@ -30,6 +30,10 @@ android {
         jvmTarget = '1.8'
     }
 
+    viewBinding {
+        enabled = true
+    }
+
     dynamicFeatures = [':modules:foo', ':modules:bar']
 }
 

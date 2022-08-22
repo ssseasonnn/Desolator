@@ -3,20 +3,21 @@ package zlc.season.desolator
 import android.app.Activity
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
 import zlc.season.desolator.DesolatorHelper.awaitActivityCreated
 import zlc.season.desolator.DesolatorHelper.classLoader
+import zlc.season.desolator.DesolatorHelper.enableReflection
 import zlc.season.desolator.util.logw
 import zlc.season.desolator.util.pluginFile
 import zlc.season.downloadx.Progress
 import zlc.season.downloadx.State
+import zlc.season.downloadx.utils.LOG_ENABLE
 
 object Desolator {
     private val pluginManager by lazy { PluginManager() }
     private val pluginLoader by lazy { PluginLoader() }
 
     private val pluginDownloader by lazy { DefaultPluginDownloader() }
-    private val coroutineScope by lazy { GlobalScope }
+    private val coroutineScope by lazy { MainScope() }
 
     private var initJob: Job? = null
 
@@ -26,6 +27,8 @@ object Desolator {
 
     fun init(isDebug: Boolean = false): Job {
         DesolatorHelper.isDebug = isDebug
+        LOG_ENABLE = true
+        enableReflection()
 
         return coroutineScope.launch {
             val firstActivity = awaitActivityCreated()

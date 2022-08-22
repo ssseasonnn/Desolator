@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
         val btnHello = findViewById<Button>(R.id.btn_hello)
         btnHello.setOnClickListener {
 //            Desolator.startPlugin(90001)
-            Desolator.startPlugin(PluginData(1, "foo-debug", 1, "zlc.season.foo.FooFragment"))
+            Desolator.startPlugin(PluginData("101574", "foo", "1", "zlc.season.foo.FooFragment"))
 
 //            val fragment = classLoader.loadClass("com.example.plugina.PluginFragment").newInstance() as Fragment
 //            supportFragmentManager.beginTransaction()

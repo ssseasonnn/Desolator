@@ -1,10 +1,11 @@
 package zlc.season.desolator
 
 data class PluginData(
-    val id: Int,
+    val id: String,
     val name: String,
-    val version: Int,
+    val version: String,
     val entrance: String = "",
+    val moduleName: String = "",
     val downloadUrl: String = ""
 ) {
     override fun toString(): String {

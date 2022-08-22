@@ -13,7 +13,7 @@ class PluginLoader {
     private val resourceLoader by lazy { ResourceLoader() }
     private val dexLoader by lazy { DexLoader() }
 
-    private val pluginMap = mutableMapOf<Int, DesolatorPlugin>()
+    private val pluginMap = mutableMapOf<String, DesolatorPlugin>()
 
 
     fun loadPlugin(plugin: DesolatorPlugin) {
@@ -23,7 +23,7 @@ class PluginLoader {
         pluginMap[plugin.pluginId] = plugin
     }
 
-    fun isPluginLoaded(pluginId: Int): Boolean {
+    fun isPluginLoaded(pluginId: String): Boolean {
         return pluginMap[pluginId] != null
     }
 

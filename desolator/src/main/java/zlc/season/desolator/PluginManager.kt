@@ -2,8 +2,8 @@ package zlc.season.desolator
 
 import com.google.gson.Gson
 import dalvik.system.DexClassLoader
-import zlc.season.desolator.DesolatorInit.assetManager
-import zlc.season.desolator.DesolatorInit.classLoader
+import zlc.season.desolator.DesolatorHelper.assetManager
+import zlc.season.desolator.DesolatorHelper.classLoader
 import zlc.season.desolator.util.*
 import zlc.season.desolator.util.Constant.ASSET_DIR
 import zlc.season.desolator.util.Constant.PLUGIN_INFO_FILE_NAME
@@ -45,7 +45,7 @@ class PluginManager {
             if (path.isPluginDir()) {
                 val pluginData = parsePluginData(path)
                 pluginData?.let {
-                    if (shouldUpdateDiskFile(it)) {
+                    if (DesolatorHelper.isDebug || shouldUpdateDiskFile(it)) {
                         deleteOldDiskFile(pluginData)
                         copyFileFromAssetToDisk(path, pluginData)
                     }

@@ -1,11 +1,13 @@
 package zlc.season.desolator
 
+import android.app.Activity
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import zlc.season.desolator.DesolatorInit.classLoader
+import kotlinx.coroutines.flow.collect
+import zlc.season.desolator.DesolatorHelper.awaitActivityCreated
+import zlc.season.desolator.DesolatorHelper.classLoader
 import zlc.season.desolator.util.logw
+import zlc.season.desolator.util.pluginFile
 import zlc.season.downloadx.Progress
 import zlc.season.downloadx.State
 
@@ -16,40 +18,60 @@ object Desolator {
     private val pluginDownloader by lazy { DefaultPluginDownloader() }
     private val coroutineScope by lazy { GlobalScope }
 
-    fun installInternalPlugin(): Job {
-        return coroutineScope.launch(Dispatchers.IO) {
+    private var initJob: Job? = null
+
+    suspend fun awaitInit() {
+        initJob?.join()
+    }
+
+    fun init(isDebug: Boolean = false): Job {
+        DesolatorHelper.isDebug = isDebug
+
+        return coroutineScope.launch {
+            val firstActivity = awaitActivityCreated()
+            installInternalPlugin(firstActivity)
+        }.also { initJob = it }
+    }
+
+    private suspend fun installInternalPlugin(activity: Activity) {
+        withContext(Dispatchers.IO) {
             val pluginList = pluginManager.initInternalPlugin()
             pluginList.forEach {
-                pluginLoader.loadPlugin(it)
+                pluginLoader.loadPluginInternal(it, activity)
             }
         }
     }
 
     fun installPlugin(
         pluginData: PluginData,
-        onProgress: (Progress) -> Unit,
-        onSuccess: () -> Unit,
-        onFailed: () -> Unit
+        onFailed: () -> Unit = {},
+        onSuccess: () -> Unit = {},
+        onProgress: (Progress) -> Unit = {}
     ): Job {
-        val flow = pluginDownloader.startDownload(pluginData)
-        val job = flow.onEach {
-            when (it) {
-                is State.Downloading -> {
-                    onProgress(it.progress)
+        val alreadyDownloaded = pluginData.pluginFile().exists()
+        val job = coroutineScope.launch {
+            if (alreadyDownloaded) {
+                realInstallPlugin(pluginData)
+                onSuccess()
+            } else {
+                val flow = pluginDownloader.startDownload(pluginData)
+                flow.collect {
+                    when (it) {
+                        is State.Downloading -> onProgress(it.progress)
+                        is State.Failed, is State.Stopped -> onFailed()
+                        is State.Succeed -> {
+                            realInstallPlugin(pluginData)
+                            onSuccess()
+                        }
+                        else -> {}
+                    }
                 }
-                is State.Failed, is State.Stopped -> {
-                    onFailed()
-                }
-                is State.Succeed -> {
-                    realInstallPlugin(pluginData)
-                    onSuccess()
-                }
-                else -> {}
             }
-        }.launchIn(coroutineScope)
-
+        }
         job.invokeOnCompletion {
-            pluginDownloader.cancelDownload(pluginData)
+            if (it != null && !alreadyDownloaded) {
+                pluginDownloader.cancelDownload(pluginData)
+            }
         }
         return job
     }
@@ -72,7 +94,7 @@ object Desolator {
         val fragmentCls = classLoader.loadClass(pluginData.entrance) as Class<*>
         if (Fragment::class.java.isAssignableFrom(fragmentCls)) {
             val fragment = fragmentCls.newInstance() as Fragment
-            DesolatorInit.activity?.apply {
+            DesolatorHelper.fragmentActivity?.apply {
                 supportFragmentManager.beginTransaction().apply {
                     add(android.R.id.content, fragment)
                     commit()

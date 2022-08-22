@@ -10,20 +10,31 @@ import zlc.season.desolator.PluginData
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Desolator.installInternalPlugin()
-
         setContentView(R.layout.activity_main)
-        println(R.layout.activity_main)
 
-        val btnHello = findViewById<Button>(R.id.btn_hello)
-        btnHello.setOnClickListener {
-//            Desolator.startPlugin(90001)
-            Desolator.startPlugin(PluginData("101574", "foo", "1", "zlc.season.foo.FooFragment"))
+        val btnPluginFoo = findViewById<Button>(R.id.btn_plugin_foo)
+        val btnPluginBar = findViewById<Button>(R.id.btn_plugin_bar)
 
-//            val fragment = classLoader.loadClass("com.example.plugina.PluginFragment").newInstance() as Fragment
-//            supportFragmentManager.beginTransaction()
-//                .add(R.id.container, fragment)
-//                .commit()
+        btnPluginFoo.setOnClickListener {
+            Desolator.startPlugin(
+                PluginData(
+                    "101574",
+                    "foo",
+                    "1",
+                    "zlc.season.foo.FooFragment"
+                )
+            )
+        }
+
+        btnPluginBar.setOnClickListener {
+            Desolator.startPlugin(
+                PluginData(
+                    "97299",
+                    "bar",
+                    "1",
+                    "zlc.season.bar.BarFragment"
+                )
+            )
         }
     }
 }

@@ -8,11 +8,23 @@ import androidx.fragment.app.Fragment
 import zlc.season.foo.databinding.FragmentFooBinding
 
 class FooFragment : Fragment() {
+    var binding: FragmentFooBinding? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return FragmentFooBinding.inflate(inflater, container, false).root
+
+        return FragmentFooBinding.inflate(inflater, container, false).also { binding = it }.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+//        binding?.apply {
+//            val drawable =
+//                requireContext().applicationContext.resources.getDrawable(R.drawable.ic_test)
+//            ivTest.setImageDrawable(drawable)
+//        }
     }
 }

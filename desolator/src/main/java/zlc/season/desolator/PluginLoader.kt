@@ -1,11 +1,9 @@
 package zlc.season.desolator
 
+import android.app.Activity
 import android.content.res.AssetManager
-import android.content.res.Resources
-import zlc.season.desolator.util.Class
-import zlc.season.desolator.util.field
-import zlc.season.desolator.util.method
-import zlc.season.desolator.util.of
+import zlc.season.desolator.DesolatorHelper.assetManager
+import zlc.season.desolator.util.*
 import java.lang.reflect.Array.newInstance
 import kotlin.Array as KotlinArray
 
@@ -23,31 +21,35 @@ class PluginLoader {
         pluginMap[plugin.pluginId] = plugin
     }
 
+    fun loadPluginInternal(plugin: DesolatorPlugin, activity: Activity) {
+        dexLoader.addPlugin(plugin)
+        resourceLoader.addPluginInternal(plugin, activity)
+
+        pluginMap[plugin.pluginId] = plugin
+    }
+
     fun isPluginLoaded(pluginId: String): Boolean {
         return pluginMap[pluginId] != null
     }
 
     class ResourceLoader {
-        private val resourceField = DesolatorInit.contextImpl.javaClass.field("mResources")
-        private val assetManager = AssetManager::class.java.newInstance()
-        private val addAssetPathMethod =
-            assetManager::class.java.method("addAssetPath", String::class)
-
-        init {
-            addAssetPathMethod.invoke(assetManager, DesolatorInit.context.packageResourcePath)
-        }
+        private val assetManagerCls = AssetManager::class.java
+        private val addAssetPathMethod = assetManagerCls.method("addAssetPath", String::class)
 
         fun addPlugin(desolatorPlugin: DesolatorPlugin) {
             try {
                 addAssetPathMethod.invoke(assetManager, desolatorPlugin.apkPath)
-                val resource = Resources(
-                    assetManager,
-                    DesolatorInit.context.resources.displayMetrics,
-                    DesolatorInit.context.resources.configuration
-                )
-                resourceField.set(DesolatorInit.contextImpl, resource)
             } catch (e: Exception) {
-                e.printStackTrace()
+                e.logw()
+            }
+        }
+
+        fun addPluginInternal(desolatorPlugin: DesolatorPlugin, activity: Activity) {
+            try {
+                addAssetPathMethod.invoke(assetManager, desolatorPlugin.apkPath)
+                addAssetPathMethod.invoke(activity.assets, desolatorPlugin.apkPath)
+            } catch (e: Exception) {
+                e.logw()
             }
         }
     }
@@ -58,7 +60,7 @@ class PluginLoader {
         private val fieldDexElements = Class("dalvik.system.DexPathList").field("dexElements")
 
         //origin info
-        private val pathList = fieldPathList.of(DesolatorInit.classLoader)
+        private val pathList = fieldPathList.of(DesolatorHelper.classLoader)
         private val dexElements = fieldDexElements.of(pathList) as KotlinArray<*>
 
         //current dex elements
@@ -77,7 +79,7 @@ class PluginLoader {
                 //save current
                 currentDexElements = mergedDexElements
             } catch (e: Exception) {
-                e.printStackTrace()
+                e.logw()
             }
         }
 

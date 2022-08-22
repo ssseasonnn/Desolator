@@ -1,6 +1,6 @@
 apply plugin: 'com.android.dynamic-feature'
 apply plugin: 'org.jetbrains.kotlin.android'
-//apply plugin: 'io.github.ssseasonnn.desolator'
+apply plugin: 'io.github.ssseasonnn.desolator'
 
 android {
     compileSdk 31

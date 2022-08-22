@@ -15,14 +15,14 @@ dependencies {
 }
 
 group = 'io.github.ssseasonnn'
-version = '1.0.0'
+version = '1.1.0'
 
 gradlePlugin {
     plugins {
         desolatorPlugin {
             id = 'io.github.ssseasonnn.desolator'
             displayName = 'Desolator plugin'
-            description = 'Desolator plugin'
+            description = 'An Android plugin for Desolator!'
             implementationClass = 'zlc.season.desolator.plugin.DesolatorPlugin'
         }
     }
@@ -31,7 +31,7 @@ gradlePlugin {
 pluginBundle {
     website = 'https://github.com/ssseasonnn/Desolator'
     vcsUrl = 'https://github.com/ssseasonnn/Desolator.git'
-    tags = ['Desolator', 'Plugin']
+    tags = ['Desolator']
 }
 
 tasks.withType(Copy).all {

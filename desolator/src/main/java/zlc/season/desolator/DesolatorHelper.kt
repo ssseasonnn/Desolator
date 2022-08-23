@@ -4,13 +4,10 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
 import android.content.res.AssetManager
-import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import zlc.season.claritypotion.ClarityPotion
 import zlc.season.claritypotion.ClarityPotion.application
-import zlc.season.desolator.util.logw
-import java.lang.reflect.Method
 import kotlin.coroutines.suspendCoroutine
 
 @SuppressLint("StaticFieldLeak")
@@ -32,31 +29,6 @@ internal object DesolatorHelper {
                 null
             }
         }
-
-    internal fun enableReflection() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            try {
-                val forName = Class::class.java.getDeclaredMethod("forName", String::class.java)
-                val getDeclaredMethod = Class::class.java.getDeclaredMethod(
-                    "getDeclaredMethod",
-                    String::class.java, arrayOf<Class<*>>()::class.java
-                )
-                val vmRuntimeClass = forName.invoke(null, "dalvik.system.VMRuntime") as Class<*>
-                val getRuntimeMethod =
-                    getDeclaredMethod.invoke(vmRuntimeClass, "getRuntime", null) as Method
-                val setHiddenApiMethod = getDeclaredMethod.invoke(
-                    vmRuntimeClass, "setHiddenApiExemptions",
-                    arrayOf<Class<*>>(Array<String>::class.java)
-                ) as Method
-
-                val vmRuntime = getRuntimeMethod.invoke(null)
-
-                setHiddenApiMethod.invoke(vmRuntime, arrayOf("L"))
-            } catch (e: Exception) {
-                e.logw()
-            }
-        }
-    }
 
     internal suspend fun awaitActivityCreated() = suspendCoroutine<Activity> {
         application.registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {

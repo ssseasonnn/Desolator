@@ -5,7 +5,6 @@ import androidx.fragment.app.Fragment
 import kotlinx.coroutines.*
 import zlc.season.desolator.DesolatorHelper.awaitActivityCreated
 import zlc.season.desolator.DesolatorHelper.classLoader
-import zlc.season.desolator.DesolatorHelper.enableReflection
 import zlc.season.desolator.util.logw
 import zlc.season.desolator.util.pluginFile
 import zlc.season.downloadx.Progress
@@ -27,10 +26,9 @@ object Desolator {
 
     fun init(isDebug: Boolean = false): Job {
         DesolatorHelper.isDebug = isDebug
-        LOG_ENABLE = true
-        enableReflection()
+        LOG_ENABLE = isDebug
 
-        return coroutineScope.launch {
+        return coroutineScope.launch(Dispatchers.Main.immediate) {
             val firstActivity = awaitActivityCreated()
             installInternalPlugin(firstActivity)
         }.also { initJob = it }

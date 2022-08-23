@@ -15,7 +15,7 @@ dependencies {
 }
 
 group = 'io.github.ssseasonnn'
-version = '1.1.0'
+version = '1.1.1'
 
 gradlePlugin {
     plugins {
@@ -43,7 +43,7 @@ publishing {
         maven(MavenPublication) {
             groupId = 'io.github.ssseasonnn'
             artifactId = 'io.github.ssseasonnn.desolator'
-            version = '1.0.0'
+            version = '1.1.1'
 
             from components.java
         }

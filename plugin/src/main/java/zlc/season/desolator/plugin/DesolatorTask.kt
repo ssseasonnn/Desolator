@@ -21,6 +21,9 @@ import javax.inject.Inject
 interface CopyApkParameters : WorkParameters, Serializable {
     val inputApkFile: RegularFileProperty
     val outputApkFile: RegularFileProperty
+
+    val jsonContent: Property<String>
+    val outputJsonFile: RegularFileProperty
 }
 
 abstract class CopyApkWork @Inject constructor(
@@ -32,19 +35,9 @@ abstract class CopyApkWork @Inject constructor(
 
         outputFile.delete()
         inputFile.copyTo(outputFile)
-    }
-}
 
-interface CreateJsonParameters : WorkParameters, Serializable {
-    val jsonContent: Property<String>
-    val outputJsonFile: RegularFileProperty
-}
-
-abstract class CreateJsonWork @Inject constructor(private val parameters: CreateJsonParameters) :
-    WorkAction<CreateJsonParameters> {
-    override fun execute() {
-        val file = parameters.outputJsonFile.get().asFile
-        file.writeText(parameters.jsonContent.get())
+        val outputJsonFile = copyApkParameters.outputJsonFile.get().asFile
+        outputJsonFile.writeText(copyApkParameters.jsonContent.get())
     }
 }
 
@@ -87,20 +80,12 @@ abstract class CopyApksTask @Inject constructor(
 
             val outputFile = File(destDir.get(), pluginFileName.get())
             param.outputApkFile.set(outputFile)
-            param.outputApkFile.get().asFile
-        }
 
-        transformationRequest.get().submit(
-            this,
-            workers.noIsolation(),
-            CreateJsonWork::class.java
-        ) { _: BuiltArtifact, _: Directory, parameters: CreateJsonParameters ->
-            parameters.jsonContent.set(pluginJsonContent.get())
-            val outputFile = File(destDir.get(), pluginJsonFileName.get())
-            parameters.outputJsonFile.set(outputFile)
-            parameters.outputJsonFile.get().asFile
+            param.jsonContent.set(pluginJsonContent.get())
+            val outputJsonFile = File(destDir.get(), pluginJsonFileName.get())
+            param.outputJsonFile.set(outputJsonFile)
+
+            param.outputApkFile.get().asFile
         }
     }
 }
-
-

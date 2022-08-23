@@ -2,6 +2,7 @@ package zlc.season.desolator
 
 import android.app.Activity
 import android.content.res.AssetManager
+import zlc.season.desolator.DesolatorHelper.activity
 import zlc.season.desolator.DesolatorHelper.assetManager
 import zlc.season.desolator.util.*
 import java.lang.reflect.Array.newInstance
@@ -39,6 +40,9 @@ class PluginLoader {
         fun addPlugin(desolatorPlugin: DesolatorPlugin) {
             try {
                 addAssetPathMethod.invoke(assetManager, desolatorPlugin.apkPath)
+                activity?.apply {
+                    addAssetPathMethod.invoke(assets, desolatorPlugin.apkPath)
+                }
             } catch (e: Exception) {
                 e.logw()
             }

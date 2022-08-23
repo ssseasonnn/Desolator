@@ -15,8 +15,8 @@ object Desolator {
     private val pluginManager by lazy { PluginManager() }
     private val pluginLoader by lazy { PluginLoader() }
 
-    private val pluginDownloader by lazy { DefaultPluginDownloader() }
     private val coroutineScope by lazy { MainScope() }
+    private val pluginDownloader by lazy { DefaultPluginDownloader(coroutineScope) }
 
     private var initJob: Job? = null
 

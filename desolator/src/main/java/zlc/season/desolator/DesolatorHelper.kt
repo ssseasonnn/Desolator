@@ -21,6 +21,9 @@ internal object DesolatorHelper {
     internal val classLoader: ClassLoader = ClarityPotion.context.classLoader
     internal val assetManager: AssetManager = ClarityPotion.context.assets
 
+    internal val activity: Activity?
+        get() = ClarityPotion.activity
+
     internal val fragmentActivity: FragmentActivity?
         get() = with(ClarityPotion.activity) {
             if (this != null && this is FragmentActivity) {

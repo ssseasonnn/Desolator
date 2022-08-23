@@ -1,7 +1,6 @@
 package zlc.season.desolator
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import zlc.season.desolator.util.pluginDir
 import zlc.season.desolator.util.pluginFileName
@@ -15,7 +14,7 @@ interface PluginDownloader {
 }
 
 class DefaultPluginDownloader(
-    private val coroutineScope: CoroutineScope = GlobalScope
+    private val coroutineScope: CoroutineScope
 ) : PluginDownloader {
     override fun startDownload(pluginData: PluginData): Flow<State> {
         val task = coroutineScope.download(

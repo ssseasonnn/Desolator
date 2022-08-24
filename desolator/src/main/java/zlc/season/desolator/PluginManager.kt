@@ -7,7 +7,6 @@ import zlc.season.desolator.DesolatorHelper.classLoader
 import zlc.season.desolator.util.*
 import zlc.season.desolator.util.Constant.ASSET_DIR
 import zlc.season.desolator.util.Constant.PLUGIN_INFO_FILE_NAME
-import zlc.season.desolator.util.Constant.PLUGIN_NAME_SUFFIX
 import java.io.InputStream
 
 class PluginManager {
@@ -39,25 +38,46 @@ class PluginManager {
 
     private fun createPluginDataList(): List<PluginData> {
         val paths = listAsset(ASSET_DIR) ?: return emptyList()
-
         val pluginDataList = mutableListOf<PluginData>()
+
+        fun copyFile(path: String, pluginData: PluginData) {
+            try {
+                copyFileFromAssetToDisk(path, pluginData)
+                pluginDataList.add(pluginData)
+            } catch (e: Exception) {
+                e.logw()
+            }
+        }
+
         paths.forEach { path ->
-            if (path.isPluginDir()) {
+            if (isPluginDir(path)) {
                 val pluginData = parsePluginData(path)
                 pluginData?.let {
-                    if (DesolatorHelper.isDebug || shouldUpdateDiskFile(it)) {
-                        deleteOldDiskFile(pluginData)
-                        copyFileFromAssetToDisk(path, pluginData)
+                    if (DesolatorHelper.isDebug) {
+                        it.pluginFile().delete()
+                        copyFile(path, it)
+                    } else {
+                        if (!it.isPluginExists()) {
+                            copyFile(path, it)
+                        } else {
+                            val newPluginData = findLatestPluginData(it)
+                            pluginDataList.add(newPluginData)
+                        }
                     }
-                    pluginDataList.add(pluginData)
                 }
             }
         }
         return pluginDataList
     }
 
-    private fun String.isPluginDir(): Boolean {
-        val paths = listAsset("$ASSET_DIR/$this") ?: return false
+    private fun findLatestPluginData(pluginData: PluginData): PluginData {
+        val pluginDir = pluginData.pluginBaseDir()
+        val maxVersion = pluginDir.listFiles()?.map { it.name }?.maxOf { it } ?: pluginData.version
+        return pluginData.copy(version = maxVersion)
+    }
+
+    private fun isPluginDir(path: String): Boolean {
+        val paths = listAsset("$ASSET_DIR/$path") ?: return false
 
         var containPluginInfoFile = false
         for (name in paths) {
@@ -92,22 +112,10 @@ class PluginManager {
         return result
     }
 
-    private fun shouldUpdateDiskFile(pluginData: PluginData): Boolean {
-        val pluginFile = pluginData.pluginFile()
-        return !pluginFile.exists()
-    }
-
     private fun copyFileFromAssetToDisk(path: String, pluginData: PluginData) {
-        val assetFile = openAsset("$ASSET_DIR/$path/${pluginData.name}${PLUGIN_NAME_SUFFIX}")
+        val assetFile = openAsset("$ASSET_DIR/$path/${pluginData.pluginFileName()}")
         val pluginFile = pluginData.pluginFile()
         assetFile copyTo pluginFile
-    }
-
-    private fun deleteOldDiskFile(pluginData: PluginData) {
-        val dir = pluginData.pluginBaseDir()
-        dir.listFiles()?.forEach {
-            it.deleteRecursively()
-        }
     }
 
     private fun listAsset(path: String): Array<String>? {

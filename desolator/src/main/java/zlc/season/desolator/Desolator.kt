@@ -1,12 +1,11 @@
 package zlc.season.desolator
 
 import android.app.Activity
-import androidx.fragment.app.Fragment
+import android.os.Bundle
 import kotlinx.coroutines.*
 import zlc.season.desolator.DesolatorHelper.awaitActivityCreated
-import zlc.season.desolator.DesolatorHelper.classLoader
-import zlc.season.desolator.util.logw
-import zlc.season.desolator.util.pluginFile
+import zlc.season.desolator.DesolatorHelper.fragmentActivity
+import zlc.season.desolator.util.*
 import zlc.season.downloadx.Progress
 import zlc.season.downloadx.State
 import zlc.season.downloadx.utils.LOG_ENABLE
@@ -43,29 +42,64 @@ object Desolator {
         }
     }
 
+    fun downloadPlugin(
+        pluginData: PluginData,
+        onProgress: (Progress) -> Unit = {},
+        onFailed: () -> Unit = {},
+        onSuccess: () -> Unit = {}
+    ): Job {
+        return coroutineScope.launch {
+            if (pluginData.isPluginExists()) {
+                onSuccess()
+                return@launch
+            }
+            realDownloadPlugin(pluginData, onProgress, onFailed, onSuccess)
+        }
+    }
+
+    private suspend fun realDownloadPlugin(
+        pluginData: PluginData,
+        onProgress: (Progress) -> Unit = {},
+        onFailed: () -> Unit = {},
+        onSuccess: suspend () -> Unit = {}
+    ) {
+        val flow = pluginDownloader.startDownload(pluginData)
+        flow.collect {
+            when (it) {
+                is State.Downloading -> onProgress(it.progress)
+                is State.Failed, is State.Stopped -> onFailed()
+                is State.Succeed -> onSuccess()
+                else -> {}
+            }
+        }
+    }
+
+    fun deletePlugin(pluginData: PluginData, deleteAll: Boolean = false) {
+        if (deleteAll) {
+            val dir = pluginData.pluginBaseDir()
+            dir.listFiles()?.forEach {
+                it.deleteRecursively()
+            }
+        } else {
+            pluginData.pluginFile().delete()
+        }
+    }
+
     fun installPlugin(
         pluginData: PluginData,
+        onProgress: (Progress) -> Unit = {},
         onFailed: () -> Unit = {},
-        onSuccess: () -> Unit = {},
-        onProgress: (Progress) -> Unit = {}
+        onSuccess: () -> Unit = {}
     ): Job {
-        val alreadyDownloaded = pluginData.pluginFile().exists()
+        val alreadyDownloaded = pluginData.isPluginExists()
         val job = coroutineScope.launch {
             if (alreadyDownloaded) {
                 realInstallPlugin(pluginData)
                 onSuccess()
             } else {
-                val flow = pluginDownloader.startDownload(pluginData)
-                flow.collect {
-                    when (it) {
-                        is State.Downloading -> onProgress(it.progress)
-                        is State.Failed, is State.Stopped -> onFailed()
-                        is State.Succeed -> {
-                            realInstallPlugin(pluginData)
-                            onSuccess()
-                        }
-                        else -> {}
-                    }
+                realDownloadPlugin(pluginData, onProgress, onFailed) {
+                    realInstallPlugin(pluginData)
+                    onSuccess()
                 }
             }
         }
@@ -78,6 +112,10 @@ object Desolator {
     }
 
     private suspend fun realInstallPlugin(pluginData: PluginData) {
+        if (isPluginLoaded(pluginData)) {
+            "$pluginData already installed!".logw()
+            return
+        }
         withContext(Dispatchers.IO) {
             val pluginInfo = pluginManager.createPlugin(pluginData)
             pluginInfo?.let {
@@ -86,20 +124,49 @@ object Desolator {
         }
     }
 
-    fun startPlugin(pluginData: PluginData) {
-        if (!pluginLoader.isPluginLoaded(pluginData.id)) {
-            "[$pluginData] not install!".logw()
+    private fun isPluginLoaded(pluginData: PluginData): Boolean {
+        return pluginLoader.isPluginLoaded(pluginData.id)
+    }
+
+    fun startPlugin(
+        pluginData: PluginData,
+        params: Bundle? = null,
+        isReplace: Boolean = true,
+        addToBackStack: Boolean = true
+    ) {
+        if (!isPluginLoaded(pluginData)) {
+            "$pluginData not install!".logw()
             return
         }
 
-        val fragmentCls = classLoader.loadClass(pluginData.entrance) as Class<*>
-        if (Fragment::class.java.isAssignableFrom(fragmentCls)) {
-            val fragment = fragmentCls.newInstance() as Fragment
-            DesolatorHelper.fragmentActivity?.apply {
-                supportFragmentManager.beginTransaction().apply {
-                    add(android.R.id.content, fragment)
-                    commit()
-                }
+        if (pluginData.entrance.isEmpty()) {
+            "$pluginData hasn't an entrance!".logw()
+            return
+        }
+
+        val fragmentActivity = fragmentActivity
+        if (fragmentActivity == null) {
+            "No FragmentActivity found, so plugin can't start.".logw()
+            return
+        }
+
+        val fragment = pluginData.createEntranceFragment(fragmentActivity, params)
+        val fm = fragmentActivity.supportFragmentManager
+        if (fm.isDestroyed) return
+
+        fm.beginTransaction().apply {
+            if (addToBackStack) {
+                addToBackStack(null)
+            }
+            if (isReplace) {
+                replace(android.R.id.content, fragment)
+            } else {
+                add(android.R.id.content, fragment)
+            }
+            if (fm.isStateSaved) {
+                commitAllowingStateLoss()
+            } else {
+                commit()
             }
         }
     }

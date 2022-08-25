@@ -17,6 +17,7 @@ class DynamicFeaturePluginConfig {
             androidExtension.onVariants { variant ->
                 val pluginData = createPluginData(extension, project)
                 configCopyApkToProjectTask(project, variant, pluginData)
+                configCopyApkToAppTask(project, variant, pluginData)
             }
         }
     }
@@ -48,8 +49,51 @@ class DynamicFeaturePluginConfig {
         }
     }
 
+    private fun configCopyApkToAppTask(
+        project: Project,
+        variant: Variant,
+        pluginData: PluginData
+    ) {
+        val copyApksProvider = project.tasks.register(
+            getTaskCopyToAppName(variant.name),
+            CopyApksTask::class.java
+        )
+
+        val transformationRequest = variant.artifacts.use(copyApksProvider)
+            .wiredWithDirectories(
+                CopyApksTask::apkFolder,
+                CopyApksTask::outFolder
+            )
+            .toTransformMany(SingleArtifact.APK)
+
+        copyApksProvider.configure {
+            it.group = GRADLE_GROUP
+            it.pluginFileName.set(pluginData.pluginFileName())
+            it.pluginJsonContent.set(createPluginInfoJson(pluginData))
+            it.pluginJsonFileName.set(pluginData.pluginJsonFileName())
+            it.destDir.set(getAppAssetDir(project, pluginData.name))
+            it.transformationRequest.set(transformationRequest)
+        }
+    }
+
     private fun getProjectApkDirForPlugin(project: Project, pluginName: String): File {
         return File(getProjectApksDir(project), "plugin_${pluginName}")
+    }
+
+    private fun getAppDir(project: Project): File {
+        var file = File("")
+        project.rootProject.subprojects {
+            if (it.pluginManager.hasPlugin(PLUGIN_APP)) {
+                file = it.projectDir
+            }
+        }
+        return file
+    }
+
+    private fun getAppAssetDir(project: Project, pluginName: String): File {
+        val fs = File.separator
+        val assetDir = File(getAppDir(project), "src${fs}main${fs}assets${fs}${DEST_DIR}")
+        return File(assetDir, "plugin_${pluginName}")
     }
 
     private fun createPluginInfoJson(pluginData: PluginData): String {

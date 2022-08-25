@@ -5,7 +5,6 @@ import org.gradle.api.Project
 
 class DesolatorPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        AppPluginConfig().configApp(project)
         DynamicFeaturePluginConfig().configFeature(project)
     }
 }

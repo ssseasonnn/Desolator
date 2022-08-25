@@ -66,6 +66,10 @@ abstract class CopyApksTask @Inject constructor(
     @get:Internal
     abstract val transformationRequest: Property<ArtifactTransformationRequest<CopyApksTask>>
 
+    init {
+        this.outputs.upToDateWhen { false }
+    }
+
     @TaskAction
     fun taskAction() {
         transformationRequest.get().submit(

@@ -40,29 +40,23 @@ class PluginManager {
         val paths = listAsset(ASSET_DIR) ?: return emptyList()
         val pluginDataList = mutableListOf<PluginData>()
 
-        fun copyFile(path: String, pluginData: PluginData) {
-            try {
-                copyFileFromAssetToDisk(path, pluginData)
-                pluginDataList.add(pluginData)
-            } catch (e: Exception) {
-                e.logw()
-            }
-        }
-
         paths.forEach { path ->
             if (isPluginDir(path)) {
                 val pluginData = parsePluginData(path)
                 pluginData?.let {
                     if (DesolatorHelper.isDebug) {
                         it.pluginFile().delete()
-                        copyFile(path, it)
+                    }
+
+                    val result = if (!it.isPluginExists()) {
+                        copyFileFromAssetToDisk(path, pluginData)
                     } else {
-                        if (!it.isPluginExists()) {
-                            copyFile(path, it)
-                        } else {
-                            val newPluginData = findLatestPluginData(it)
-                            pluginDataList.add(newPluginData)
-                        }
+                        true
+                    }
+
+                    if (result) {
+                        val newPluginData = findLatestPluginData(it)
+                        pluginDataList.add(newPluginData)
                     }
                 }
             }
@@ -112,10 +106,15 @@ class PluginManager {
         return result
     }
 
-    private fun copyFileFromAssetToDisk(path: String, pluginData: PluginData) {
-        val assetFile = openAsset("$ASSET_DIR/$path/${pluginData.pluginFileName()}")
-        val pluginFile = pluginData.pluginFile()
-        assetFile copyTo pluginFile
+    private fun copyFileFromAssetToDisk(path: String, pluginData: PluginData): Boolean {
+        return try {
+            val assetFile = openAsset("$ASSET_DIR/$path/${pluginData.pluginFileName()}")
+            val pluginFile = pluginData.pluginFile()
+            assetFile copyTo pluginFile
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun listAsset(path: String): Array<String>? {

@@ -19,12 +19,4 @@ class FooFragment : Fragment() {
         return FragmentFooBinding.inflate(inflater, container, false).also { binding = it }.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-//        binding?.apply {
-//            val drawable =
-//                requireContext().applicationContext.resources.getDrawable(R.drawable.ic_test)
-//            ivTest.setImageDrawable(drawable)
-//        }
-    }
 }

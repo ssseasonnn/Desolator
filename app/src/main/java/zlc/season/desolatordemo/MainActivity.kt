@@ -41,18 +41,20 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnPluginFromNetwork.setOnClickListener {
             val pluginData = PluginData(
-                "123",
-                "test",
-                "1",
+                "101574",
+                "foo",
+                "2",
                 "zlc.season.foo.FooFragment",
                 downloadUrl = "http://192.168.0.10:8000/plugin_foo/foo.apk"
             )
-            Desolator.installPlugin(
-                pluginData,
-                onSuccess = {
-                    Desolator.startPlugin(pluginData)
-                }
-            )
+
+            Desolator.downloadPlugin(pluginData)
+//            Desolator.installPlugin(
+//                pluginData,
+//                onSuccess = {
+//                    Desolator.startPlugin(pluginData)
+//                }
+//            )
         }
     }
 }

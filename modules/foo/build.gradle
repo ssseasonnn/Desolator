@@ -1,6 +1,10 @@
 apply from: "../modules.gradle"
 
-//desolator {
-//    pluginId = 2
-//    pluginVersion = 2
-//}
+desolator {
+    pluginId = "101"
+    pluginVersion = "1"
+    pluginName = "foo"
+    entrance = "zlc.season.foo.FooFragment"
+    moduleName = ""
+    downloadUrl = "http://192.168.0.10:8000/plugin_foo/foo.apk"
+}

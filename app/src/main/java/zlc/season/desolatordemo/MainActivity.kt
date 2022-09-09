@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
                 name = "foo",
                 version = "2",
                 entrance = "zlc.season.foo.FooFragment",
-                downloadUrl = "http://192.168.0.10:8000/plugin_foo/foo.apk"
+                downloadUrl = "http://192.168.0.30:8000/plugin_foo/foo.apk"
             )
 
             Desolator.downloadPlugin(pluginData)

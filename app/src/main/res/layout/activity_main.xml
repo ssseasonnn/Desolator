@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,23 +9,18 @@
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/btn_plugin_foo"
+        android:id="@+id/btn_load_local_plugin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Start Plugin Foo" />
+        android:text="Start Local Plugin"
+        tools:ignore="HardcodedText" />
 
     <Button
-        android:id="@+id/btn_plugin_bar"
+        android:id="@+id/btn_load_network_plugin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="Start Plugin Bar" />
-
-    <Button
-        android:id="@+id/btn_plugin_from_network"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Start Plugin From Network" />
+        android:text="Start Network Plugin"
+        tools:ignore="HardcodedText" />
 </LinearLayout>

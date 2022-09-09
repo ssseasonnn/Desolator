@@ -1,8 +1,1 @@
-{
-  "id": "101",
-  "name": "foo",
-  "version": "1",
-  "entrance": "zlc.season.foo.FooFragment",
-  "moduleName": "",
-  "downloadUrl": "http://192.168.0.10:8000/plugin_foo/foo.apk"
-}
+{"id":"101","name":"foo","version":"1","entrance":"zlc.season.foo.FooFragment","moduleName":"","downloadUrl":"http://192.168.0.10:8000/plugin_foo/foo.apk"}
